@@ -3,6 +3,7 @@ package io.github.fyrkov.outbox_demo.repository
 import io.github.fyrkov.outbox_demo.domain.OutboxRecord
 import org.jooq.DSLContext
 import org.jooq.JSONB
+import org.jooq.Record
 import org.jooq.impl.DSL.field
 import org.jooq.impl.DSL.table
 import org.springframework.stereotype.Repository
@@ -28,15 +29,15 @@ class OutboxRepository(
             .where(field("published_at").isNull())
             .orderBy(field("id"))
             .limit(limit)
-            .fetch { record ->
-                OutboxRecord(
-                    id = record.get(field("id", Long::class.java)),
-                    aggregateType = record.get(field("aggregate_type", String::class.java)),
-                    aggregateId = record.get(field("aggregate_id", String::class.java)),
-                    payload = record.get(field("payload", JSONB::class.java))?.data() ?: "{}",
-                    createdAt = record.get(field("created_at"), Instant::class.java),
-                    publishedAt = record.get(field("published_at"), Instant::class.java)
-                )
-            }
+            .fetch { deser(it) }
     }
+
+    private fun deser(record: Record): OutboxRecord = OutboxRecord(
+        id = record.get(field("id", Long::class.java)),
+        aggregateType = record.get(field("aggregate_type", String::class.java)),
+        aggregateId = record.get(field("aggregate_id", String::class.java)),
+        payload = record.get(field("payload", JSONB::class.java))?.data() ?: "{}",
+        createdAt = record.get(field("created_at"), Instant::class.java),
+        publishedAt = record.get(field("published_at"), Instant::class.java)
+    )
 }
