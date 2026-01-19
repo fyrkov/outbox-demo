@@ -4,7 +4,7 @@ create table outbox
     aggregate_type varchar(255) not null,
     aggregate_id   varchar(255) not null,
     payload        jsonb,
-    created_at     timestamptz  not null,
+    created_at     timestamptz  not null default now(),
     published_at   timestamptz
 );
 

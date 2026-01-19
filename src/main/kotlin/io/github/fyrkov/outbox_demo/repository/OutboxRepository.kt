@@ -18,7 +18,6 @@ class OutboxRepository(
             .set(field("aggregate_type", String::class.java), aggregateType)
             .set(field("aggregate_id", String::class.java), aggregateId)
             .set(field("payload", JSONB::class.java), JSONB.valueOf(payload))
-            .set(field("created_at", Instant::class.java), Instant.now())
             .returning(field("id"))
             .fetchSingle()
             .get(field("id"), Long::class.java)
