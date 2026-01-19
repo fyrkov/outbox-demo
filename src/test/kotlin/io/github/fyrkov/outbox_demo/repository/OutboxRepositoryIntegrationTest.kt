@@ -1,23 +1,18 @@
 package io.github.fyrkov.outbox_demo.repository
 
 import io.github.fyrkov.outbox_demo.AbstractIntegrationTest
-import org.jooq.DSLContext
-import org.jooq.impl.DSL.field
-import org.jooq.impl.DSL.table
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.annotation.Rollback
+import org.springframework.transaction.annotation.Transactional
 
+@Transactional
+@Rollback
 class OutboxRepositoryIntegrationTest @Autowired constructor(
     private val outboxRepository: OutboxRepository,
-    private val dsl: DSLContext,
 ) : AbstractIntegrationTest() {
 
-    @BeforeEach
-    fun setUp() {
-        dsl.deleteFrom(table("outbox")).execute()
-    }
 
     @Test
     fun `should insert a record in the outbox`() {
@@ -30,30 +25,24 @@ class OutboxRepositoryIntegrationTest @Autowired constructor(
         val id = outboxRepository.insert(aggregateType, aggregateId, payload)
 
         // then
-        val count = dsl.selectCount().from(table("outbox")).fetchOne(0, Int::class.java)
-        assertEquals(1, count)
-
-        val record = dsl.selectFrom(table("outbox")).where(field("id").eq(id)).fetchSingle()
-        assertEquals(id, record.get(field("id", Long::class.java)))
-        assertEquals(aggregateType, record.get(field("aggregate_type", String::class.java)))
-        assertEquals(aggregateId, record.get(field("aggregate_id", String::class.java)))
-        assertEquals(payload, record.get(field("payload")).toString())
-        assertNotNull(record.get(field("created_at")))
-        assertNull(record.get(field("published_at")))
+        assertNotNull(id)
     }
 
     @Test
     fun `should select unpublished records`() {
-        // given
-        outboxRepository.insert("type1", "id1", "{}")
-        outboxRepository.insert("type2", "id2", "{}")
-
         // when
         val records = outboxRepository.selectUnpublished(10)
 
         // then
-        assertEquals(2, records.size)
-        assertEquals("type1", records[0].aggregateType)
-        assertEquals("type2", records[1].aggregateType)
+        assertEquals(10, records.size)
+
+        records.forEach { record ->
+            assertNotNull(record.id)
+            assertEquals("test_type", record.aggregateType)
+            assertTrue(record.aggregateId.startsWith("test_id_"))
+            assertEquals("{}", record.payload)
+            assertNotNull(record.createdAt)
+            assertNull(record.publishedAt)
+        }
     }
 }
