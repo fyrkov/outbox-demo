@@ -1,5 +1,6 @@
 package io.github.fyrkov.outbox_demo.repository
 
+import io.github.fyrkov.outbox_demo.domain.OutboxRecord
 import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.jooq.impl.DSL.field
@@ -21,5 +22,22 @@ class OutboxRepository(
             .returning(field("id"))
             .fetchSingle()
             .get(field("id"), Long::class.java)
+    }
+
+    fun selectUnpublished(limit: Int): List<OutboxRecord> {
+        return dsl.selectFrom(table("outbox"))
+            .where(field("published_at").isNull())
+            .orderBy(field("id"))
+            .limit(limit)
+            .fetch { record ->
+                OutboxRecord(
+                    id = record.get(field("id", Long::class.java)),
+                    aggregateType = record.get(field("aggregate_type", String::class.java)),
+                    aggregateId = record.get(field("aggregate_id", String::class.java)),
+                    payload = record.get(field("payload")).toString(),
+                    createdAt = record.get(field("created_at")).toString(),
+                    publishedAt = record.get(field("published_at"))?.toString()
+                )
+            }
     }
 }

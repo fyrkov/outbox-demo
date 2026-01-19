@@ -5,6 +5,7 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL.field
 import org.jooq.impl.DSL.table
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -12,6 +13,11 @@ class OutboxRepositoryIntegrationTest @Autowired constructor(
     private val outboxRepository: OutboxRepository,
     private val dsl: DSLContext,
 ) : AbstractIntegrationTest() {
+
+    @BeforeEach
+    fun setUp() {
+        dsl.deleteFrom(table("outbox")).execute()
+    }
 
     @Test
     fun `should insert a record in the outbox`() {
@@ -34,5 +40,20 @@ class OutboxRepositoryIntegrationTest @Autowired constructor(
         assertEquals(payload, record.get(field("payload")).toString())
         assertNotNull(record.get(field("created_at")))
         assertNull(record.get(field("published_at")))
+    }
+
+    @Test
+    fun `should select unpublished records`() {
+        // given
+        outboxRepository.insert("type1", "id1", "{}")
+        outboxRepository.insert("type2", "id2", "{}")
+
+        // when
+        val records = outboxRepository.selectUnpublished(10)
+
+        // then
+        assertEquals(2, records.size)
+        assertEquals("type1", records[0].aggregateType)
+        assertEquals("type2", records[1].aggregateType)
     }
 }
