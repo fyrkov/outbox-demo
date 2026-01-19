@@ -22,13 +22,15 @@ Access the app at http://localhost:8080/
 
 
 ## Data model
+
+## What is not in the scope of this POC
+
+* Serialization of events
+* Retry mechanism with tries counters
  
 ## Notes
 
 https://microservices.io/patterns/data/transactional-outbox.html
-
-Spring offesr its own implemenatiaon
-
 
 ```
 postgres=#  explain analyze select * from outbox where published_at is null order by id limit 10;
