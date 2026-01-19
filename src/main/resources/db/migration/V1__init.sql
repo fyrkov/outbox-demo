@@ -4,15 +4,16 @@ create table outbox
     aggregate_type varchar(255) not null,
     aggregate_id   varchar(255) not null,
     payload        jsonb,
-    created_at     timestamp  not null,
-    published_at   timestamp
+    created_at     timestamptz  not null,
+    published_at   timestamptz
 );
 
 create index outbox_unpublished_id_idx
     on outbox (id)
     where published_at is null;
 
--- Add test data
+
+-- TEST DATA
 
 -- Published records
 insert into outbox (aggregate_type, aggregate_id, payload, created_at, published_at)

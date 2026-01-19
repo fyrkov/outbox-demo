@@ -34,9 +34,9 @@ class OutboxRepository(
                     id = record.get(field("id", Long::class.java)),
                     aggregateType = record.get(field("aggregate_type", String::class.java)),
                     aggregateId = record.get(field("aggregate_id", String::class.java)),
-                    payload = record.get(field("payload")).toString(),
-                    createdAt = record.get(field("created_at")).toString(),
-                    publishedAt = record.get(field("published_at"))?.toString()
+                    payload = record.get(field("payload", JSONB::class.java))?.data() ?: "{}",
+                    createdAt = record.get(field("created_at"), Instant::class.java),
+                    publishedAt = record.get(field("published_at"), Instant::class.java)
                 )
             }
     }
