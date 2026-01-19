@@ -3,7 +3,7 @@ create table outbox
     id             bigint generated always as identity not null,
     aggregate_type varchar(255)                        not null,
     aggregate_id   varchar(255)                        not null,
-    payload        jsonb no null,
+    payload        jsonb                               not null,
     created_at     timestamptz                         not null default now(),
     published_at   timestamptz
 ) partition by list (published_at);
