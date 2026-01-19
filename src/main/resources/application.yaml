@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: outbox-demo
+  datasource:
+    url: jdbc:postgresql://localhost:15433/postgres
+    username: postgres
+    password: secret
