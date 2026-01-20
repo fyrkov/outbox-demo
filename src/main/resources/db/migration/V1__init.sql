@@ -11,10 +11,6 @@ create table outbox
 create table outbox_unpublished partition of outbox for values in (null);
 create table outbox_published partition of outbox default;
 
--- TODO needed?
-create unique index outbox_id_published_at_idx
-    on outbox (id, published_at);
-
 create index idx on outbox_unpublished (id);
 
 -- TEST DATA
