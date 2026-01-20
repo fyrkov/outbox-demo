@@ -52,7 +52,7 @@ The `outbox` table is partitioned into 2 parts: `published` and `unpublished` re
 Only the `unpublished` partition is indexed to simplify selection of records for publication.
 This setup simplifies maintenance and reduces the `unpublished` partition table as well as the index size.
 One important consequence of this partitioning is that a global uniqueness constraint on `id` cannot be enforced. 
-This is considered an acceptable trade-off because `id` is generated only by the database sequence, 
+This is considered an acceptable trade-off because `id` is generated only by the database sequence (`generated always`), 
 so duplicates are not expected.
 
 
